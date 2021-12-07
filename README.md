@@ -1,3 +1,5 @@
+[中文版介绍](README-zh-cn.md)
+
 The most commonly used rotation algorithms (aka block swaps) were documented around 1981 and haven't notably changed since.
 
 Below I'll describe several variants, notably the conjoined triple reversal, followed by a benchmark graph.
