@@ -1,27 +1,31 @@
-The most commonly used rotation algorithms (aka block swaps) were documented around 1981 and haven't notably changed since.
+目前最常用的轮转算法 (rotation algorithms)（也称：块交换算法, block swaps）最早于 1981 年有记录，这么多年来并没有大的改进。
 
-Below I'll describe several variants, notably the conjoined triple reversal, followed by a benchmark graph.
+以下我会介绍一些轮转算法的变种，特别是连体三重反转轮转(Conjoined Triple Reversal Rotation)，并附上性能测试的结果图。
 
-Introduction to rotating
-------------------------
-A rotation is to swap the left side of an array with the right side.
+
+## 专有名词对照表
++ rotation, rotating: 轮转
++ circshift: 循环移位
+
+## 轮转算法简介
+
+轮转 (rotating) 指的是将一个数组的左右侧对调。这是一种在很多排序算法中常用的操作。
 ```c
 ┌──────────────────────────┬─────────────────┐
 │ 1  2  3  4  5  6  7  8  9│10 11 12 13 14 15│
 └──────────────────────────┴─────────────────┘
 ```
-It's a common operation in a variety of sorting algorithms. After the rotation the data is as following.
+上面的数组经过轮转后变成下面这个样子：
 ```c
 ┌─────────────────┬──────────────────────────┐
 │10 11 12 13 14 15│ 1  2  3  4  5  6  7  8  9│
 └─────────────────┴──────────────────────────┘
 ```
 
-Auxiliary Rotation
-------------------
-This is an easy and fast way to rotate, but since it requires auxiliary memory it is of little interest to in-place algorithms.
+## 辅助空间轮转
+辅助（空间）轮转 (Auxiliary Rotation) 是一种简单而快速的轮转方式，但由于它需要临时的辅助空间。
 
-Typically the smaller half is copied to swap memory, the larger half is moved, and the swap memory is copied back to the main array.
+通常情况下，较小的一半被复制到辅助空间，较大的一半被移动，然后将辅助空间复制回主数组。
 ```c
 ┌──────────────────────────┬─────────────────┐
 │ 1  2  3  4  5  6  7  8  9│10 11 12 13 14 15│
@@ -41,11 +45,11 @@ Typically the smaller half is copied to swap memory, the larger half is moved, a
 └─────────────────┴──────────────────────────┘
 ```
 
-Bridge Rotation
----------------
-This is a slightly more complex auxiliary rotation that reduces the maximum auxiliary memory requirement from 50% to 33%.
+## 桥轮转
+桥轮转 (Bridge Rotation) 是一种更复杂辅助空间轮转算法，它将所需的最大辅助空间大小从 50% 缩减至 33%。
 
-If the overlap between the two halves is smaller than the halves themselves it copies the overlap to swap memory instead.
+如果两半之间的重叠部分小于两半本身，它会将重叠部分复制到交换内存中。
+如果重叠部分大于两半中较小的那部分，则将较小的那部分复制到交换内存中。
 ```c
 ┌──────────────────────────┬─────────────────┐
 │ 1  2  3  4  5  6  7  8  9│10 11 12 13 14 15│
@@ -65,12 +69,12 @@ If the overlap between the two halves is smaller than the halves themselves it c
 └─────────────────┴──────────────────────────┘
 ```
 
-Bentley's Juggling Rotation
----------------------------
-Also known as the dolphin algorithm. This is a relatively complex and cache inefficient way to rotate in-place, though it does so in the minimal amount of moves. Its first known publication was in 1965.
+## Bentley 的杂耍轮转
 
-It computes the greatest common divisor and uses a loop to create a chain of consecutive swaps.
+本特利的杂耍轮转 (Bentley's Juggling Rotation) 也称海豚算法 (dolphin algorithm)，首次发表是在1965年。
+这是一种相对复杂且缓存效率低下的原地轮转算法，尽管它以最小的移动量完成了轮转。
 
+它计算出最大公因子，并使用一个循环来构造出一个连续的交换链。
 ```c
 ┌──────────────────────────┬─────────────────┐
 │ 1  2  3  4  5  6  7  8  9│10 11 12 13 14 15│
@@ -89,9 +93,11 @@ It computes the greatest common divisor and uses a loop to create a chain of con
 └─────────────────┴──────────────────────────┘
 ```
 
-Triple Reversal Rotation
-------------------------
-This is an easy and reliable way to rotate in-place. You reverse the left side, next you reverse the right side, next you reverse the entire array. Upon completion the left and right block will be swapped.
+## 三重反转轮转
+三重反转轮转 (Triple Reversal Rotation) 这是一种简单而可靠的原地轮转的方法。
+你把左边的反转，然后把右边的反转，最后把整个阵列反转。
+三次反转完成后，左右两侧的块完成交换。
+
 ```c
 ┌──────────────────────────┬─────────────────┐
 │ 1  2  3  4  5  6  7  8  9│10 11 12 13 14 15│
@@ -110,9 +116,12 @@ This is an easy and reliable way to rotate in-place. You reverse the left side, 
 └─────────────────┴──────────────────────────┘
 ```
 
-Gries-Mills Rotation
---------------------
-Its first known publication was in 1981. You swap the smallest array to its proper location, since it's in its proper location you can forget about it. The larger array is now divided in two parts, which you swap in a similar manner, until the smallest side shrinks to 0 elements.
+## Gries-Mills 轮转
+它的首次发表是在 1981 年。
+你把最小的数组交换到适当的位置，因为它在适当的位置，所以你可以忽略它。
+更大的数组现在被分成两部分，一部分已经完成轮转，一部分还没有。
+你以类似的方式继续交换，直到待轮转的一段长度为0。
+
 ```c
 ┌──────────────────────────┬──────────────────┐
 │ 1  2  3  4  5  6  7  8  9│10 11 12  13 14 15│
@@ -131,17 +140,20 @@ Its first known publication was in 1981. You swap the smallest array to its prop
 └─────────────────┴───────────────────────────┘
 ```
 
-Grail Rotation
---------------
-The grail rotation from the Holy Grail Sort Project is Gries-Mills derived and tries to improve locality by shifting memory either left or right depending on which side it's swapped from. In addition it performs an auxiliary rotation on stack memory when the smallest side reaches a size of 1 element.
+## 圣杯轮转
+圣杯轮转 (Grail Rotation) 来自圣杯排序项目 (Holy Grail Sort Project)，由 Gries-Mills 轮转算法派生。
+它试图通过将内存向左或向右移动来提高定位性，这取决于它从哪一侧交换。
+此外，当最小的一边达到1个元素的大小时，它在堆栈内存上执行辅助轮转。
 
-Beaker Rotation
----------------
-The beaker rotation is grail derived and uses a modulo computation to minimize the number of loops. This improves performance when the relative size difference between the two halves is large.
+## 烧杯轮转
+烧杯轮转 (Beaker Rotation) 烧杯轮转是由圣杯轮转的，并使用取模计算来减少循环的数量。
+当两半之间的相对大小差异较大时，这提高了性能。
 
-Conjoined Triple Reversal Rotation
-----------------------------------
-The conjoined triple reversal rotation (aka trinity rotation) is derived from the triple reversal rotation. Rather than three seperate reversals it conjoins the three reversals, improving locality and reducing the number of moves. Optionally, if the smallest side is smaller than 8 elements it skips the trinity rotation and performs an auxiliary rotation on stack memory.
+## 连体三重反转轮转
+连体三重反转 (Conjoined Triple Reversal Rotation)，又称三位一体轮转 (trinity rotation)，由三重轮转派生出来。
+它不是三个单独的轮转，而是将三个轮转连在一起，提高了局部性并减少了移动的数量。
+可选的是，如果较小的半边小于8个元素，它将跳过三位一体轮转，在堆栈内存上执行一个辅助轮转。
+
 ```c
 ┌──────────────────────────┬─────────────────┐
 │ 1  2  3  4  5  6  7  8  9│10 11 12 13 14 15│
@@ -175,23 +187,28 @@ The conjoined triple reversal rotation (aka trinity rotation) is derived from th
 │10 11 12 13 14 15│ 1  2  3  4  5  6  7  8  9│
 └─────────────────┴──────────────────────────┘
 ```
-Benchmarks
-----------
-Since the juggling rotation is rather slow and the auxiliary/bridge and grail/beaker rotations are fairly similar I've omitted the auxiliary, juggling and grail rotations from the benchmark graph.
 
-While performance may vary depending on the specific implemention, from worst to best the order is:
 
-* Bentley's Juggling Rotation
-* Triple Reversal Rotation (reversal)
-* Grail Rotation
-* Beaker Rotation (beaker)
-* Auxiliary Rotation
-* Bridge Rotation (bridge)
-* Conjoined Triple Reversal Rotation (trinity)
+## 性能测试
+由于杂耍(juggling)轮转相当慢。
+而"辅助空间(auxiliary)"/"桥(bridge)"和"圣杯(grail)"/"烧杯(beaker)"速度相当相似。
+我从基准中省略了辅助空间(auxiliary)、杂耍(juggling)和圣杯(grail)轮转算法。
 
-It should be noted that the auxiliary Rotation performs better for smaller arrays and when the relative size difference between the two halves is large.
+虽然性能可能因具体实现而不同，但从最差到最好的顺序是：
+* 杂耍轮转 (juggling)
+* 三重反转轮转 (reversal)
+* 圣杯轮转 (grail)
+* 烧杯轮转 (beaker)
+* 辅助空间轮转 (auxiliary)
+* 桥轮转 (bridge)
+* 三位一体轮转 (trinity)
 
-The following benchmark was on WSL 2 gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04). The source code was compiled using `gcc -O3 bench.c`. Each test was ran 1,000 times with the time (in seconds) reported of the best and average run.
+需要注意的是，对于较小的数组和两半之间的相对大小差异较大时，辅助空间轮转的表现更好。
+
+下面的基准测试是在 WSL 2 gcc 7.5.0 版 (Ubuntu 7.5.0-3ubuntu1~18.04) 上进行的。
+源代码是用 `gcc -O3 bench.c` 编译的。
+每个测试都运行了 1000 次，并报告了最佳和平均运行的时间（单位：秒）。
+
 
 ![rotation graph](/graph1.png)
 
